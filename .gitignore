@@ -1,5 +1,7 @@
-env/
 *.pyc
 __pycache__/
-*.sqlite3
+*.py[cod]
+*$py.class
+db.sqlite3
+new_env/
 .env
