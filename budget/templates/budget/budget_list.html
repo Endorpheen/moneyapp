@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Budgets</h1>
+
+<a href="{% url 'add_budget' %}">Add New Budget</a>
+
+<ul>
+{% for budget in budgets %}
+    <li>
+        {{ budget.category.name }}: {{ budget.amount }} 
+        ({{ budget.start_date }} - {{ budget.end_date }})
+    </li>
+{% endfor %}
+</ul>
+
+<a href="{% url 'dashboard' %}">Back to Dashboard</a>
+{% endblock %}

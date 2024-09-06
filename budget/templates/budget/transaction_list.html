@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Transactions</h1>
+
+<form method="get">
+    <input type="text" name="q" placeholder="Search...">
+    <select name="category">
+        <option value="">All Categories</option>
+        {% for category in categories %}
+        <option value="{{ category.name }}">{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    <input type="date" name="date_from">
+    <input type="date" name="date_to">
+    <select name="sort">
+        <option value="-date">Date (Newest First)</option>
+        <option value="date">Date (Oldest First)</option>
+        <option value="-amount">Amount (Highest First)</option>
+        <option value="amount">Amount (Lowest First)</option>
+    </select>
+    <button type="submit">Filter</button>
+</form>
+
+<a href="{% url 'add_transaction' %}">Add New Transaction</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for transaction in transactions %}
+        <tr>
+            <td>{{ transaction.date }}</td>
+            <td>{{ transaction.category.name }}</td>
+            <td>{{ transaction.amount }}</td>
+            <td>{{ transaction.description }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'dashboard' %}">Back to Dashboard</a>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="summary">
+    <h2>Summary</h2>
+    <p>Total Income: {{ income }}</p>
+    <p>Total Expenses: {{ expenses }}</p>
+    <p>Balance: {{ balance }}</p>
+</div>
+
+<div class="budgets">
+    <h2>Budgets</h2>
+    <ul>
+    {% for budget in budgets %}
+        <li>
+            {{ budget.category.name }}: {{ budget.amount }} 
+            ({{ budget.start_date }} - {{ budget.end_date }})
+        </li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'add_budget' %}">Add New Budget</a>
+</div>
+
+<div class="recent-transactions">
+    <h2>Recent Transactions</h2>
+    <ul>
+    {% for transaction in recent_transactions %}
+        <li>
+            {{ transaction.date }} - {{ transaction.category.name }} - {{ transaction.amount }}
+            {% if transaction.category.type == 'expense' %}(Expense){% else %}(Income){% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+
+<a href="{% url 'add_transaction' %}">Add New Transaction</a>
+<a href="{% url 'transaction_list' %}">View All Transactions</a>
+{% endblock %}
