@@ -12,7 +12,7 @@ A full-stack web application for managing personal finances. Built with Django R
 ## Tech Stack
 - **Backend:** Django, Django REST Framework
 - **Frontend:** React, Axios
-- **Database:** PostgreSQL
+- **Database:** SQLite
 - **Authentication:** JWT
 
 ## Installation

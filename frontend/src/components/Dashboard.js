@@ -4,6 +4,16 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
+const Footer = () => {
+  return (
+    <div style={styles.footer}>
+      <p>Idea and produce by end0</p>
+      <p>Code: Claude V3.5 DeepSeek-V2.5</p>
+      <p>Special thx to BagiraMur ❤️</p>
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const [data, setData] = useState({
     balance: 0,
@@ -36,12 +46,10 @@ const Dashboard = () => {
       const response = await axiosInstance.get('/budget/api/dashboard/');
       const sortedTransactions = response.data.recent_transactions
         .sort((a, b) => {
-          // Сначала сортируем по дате (в обратном порядке)
           const dateComparison = new Date(b.date) - new Date(a.date);
           if (dateComparison !== 0) {
             return dateComparison;
           }
-          // Если даты одинаковые, сортируем по ID (в обратном порядке)
           return b.id - a.id;
         })
         .slice(0, 10);
@@ -101,6 +109,14 @@ const Dashboard = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    stopTokenRefreshInterval();
+    toast.success('Вы успешно вышли из системы');
+    navigate('/login');
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(amount);
   };
@@ -127,13 +143,11 @@ const Dashboard = () => {
     );
   }
 
-  // Данные для графика доходов и расходов
   const incomeExpenseData = [
     { name: 'Доходы', Доходы: data.income },
     { name: 'Расходы', Расходы: data.expenses }
   ];
 
-  // Данные для круговой диаграммы расходов по категориям
   const expenseCategoryData = categories
     .filter(cat => cat.type === 'expense')
     .map(cat => ({
@@ -145,7 +159,10 @@ const Dashboard = () => {
 
   return (
     <div style={styles.dashboard}>
-      <h1 style={styles.title}>Финансовый Дашборд</h1>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Финансовый Дашборд</h1>
+        <button onClick={handleLogout} style={styles.logoutButton}>Выйти</button>
+      </div>
       
       <div style={styles.gridContainer}>
         <div style={styles.chartColumn}>
@@ -270,6 +287,7 @@ const Dashboard = () => {
           </PieChart>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
@@ -284,10 +302,26 @@ const styles = {
     color: '#ffd700',
     transition: 'all 0.3s ease'
   },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px',
+  },
   title: {
     textAlign: 'center',
     color: '#ffd700',
     transition: 'all 0.3s ease'
+  },
+  logoutButton: {
+    padding: '10px 20px',
+    backgroundColor: '#f44336',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    transition: 'all 0.3s ease',
   },
   gridContainer: {
     display: 'grid',
@@ -299,13 +333,6 @@ const styles = {
       gridTemplateColumns: '1fr',
       gap: '10px'
     }
-  },
-  chartColumn: {
-    backgroundColor: '#2c2c2c',
-    padding: '20px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(255,215,0,0.1)',
-    transition: 'all 0.3s ease'
   },
   mainColumn: {
     display: 'flex',
@@ -426,8 +453,8 @@ const styles = {
     color: '#f44336',
     margin: '20px 0',
     transition: 'all 0.3s ease'
-},
-retryButton: {
+  },
+  retryButton: {
     padding: '10px 20px',
     fontSize: '16px',
     backgroundColor: '#ffd700',
@@ -437,12 +464,24 @@ retryButton: {
     cursor: 'pointer',
     marginTop: '10px',
     transition: 'all 0.3s ease'
-},
-noTransactions: {
+  },
+  noTransactions: {
     textAlign: 'center',
     color: '#cccccc',
     transition: 'all 0.3s ease'
-}
+  },
+  footer: {
+    position: 'fixed',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    textAlign: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    color: 'white',
+    padding: '10px 0',
+    fontSize: '0.8em',
+    transition: 'all 0.3s ease'
+  }
 };
 
 export default Dashboard;
