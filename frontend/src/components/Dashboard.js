@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { axiosInstance, startTokenRefreshInterval, stopTokenRefreshInterval } from '../api/axiosConfig';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
 const Dashboard = () => {
   const [data, setData] = useState({
@@ -126,93 +127,148 @@ const Dashboard = () => {
     );
   }
 
+  // Данные для графика доходов и расходов
+  const incomeExpenseData = [
+    { name: 'Доходы', Доходы: data.income },
+    { name: 'Расходы', Расходы: data.expenses }
+  ];
+
+  // Данные для круговой диаграммы расходов по категориям
+  const expenseCategoryData = categories
+    .filter(cat => cat.type === 'expense')
+    .map(cat => ({
+      name: cat.name,
+      value: data.recent_transactions.filter(t => t.category?.id === cat.id).reduce((sum, t) => sum + Math.abs(t.amount), 0)
+    }));
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
   return (
     <div style={styles.dashboard}>
       <h1 style={styles.title}>Финансовый Дашборд</h1>
       
-      <div style={styles.summary}>
-        <div style={styles.summaryItem}>
-          <h2 style={styles.summaryTitle}>Баланс</h2>
-          <p style={styles.summaryValue}>{formatCurrency(data.balance)}</p>
+      <div style={styles.gridContainer}>
+        <div style={styles.chartColumn}>
+          <h2 style={styles.sectionTitle}>Доходы и Расходы</h2>
+          <BarChart width={400} height={300} data={incomeExpenseData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="Доходы" fill="#4caf50" />
+            <Bar dataKey="Расходы" fill="#f44336" />
+          </BarChart>
         </div>
-        <div style={styles.summaryItem}>
-          <h2 style={styles.summaryTitle}>Доходы</h2>
-          <p style={styles.income}>{formatCurrency(data.income)}</p>
-        </div>
-        <div style={styles.summaryItem}>
-          <h2 style={styles.summaryTitle}>Расходы</h2>
-          <p style={styles.expense}>{formatCurrency(data.expenses)}</p>
-        </div>
-      </div>
 
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Добавить новую транзакцию</h2>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            type="text"
-            name="description"
-            value={newTransaction.description}
-            onChange={handleInputChange}
-            placeholder="Описание"
-            style={styles.input}
-            required
-          />
-          <input
-            type="number"
-            name="amount"
-            value={newTransaction.amount}
-            onChange={handleInputChange}
-            placeholder="Сумма"
-            style={styles.input}
-            required
-          />
-          <select
-            name="category"
-            value={newTransaction.category}
-            onChange={handleInputChange}
-            style={styles.input}
-            required
-          >
-            <option value="">Выберите категорию</option>
-            {categories.map(category => (
-              <option key={category.id} value={category.id}>{category.name}</option>
-            ))}
-          </select>
-          <input
-            type="date"
-            name="date"
-            value={newTransaction.date}
-            onChange={handleInputChange}
-            style={styles.input}
-            required
-          />
-          <button type="submit" style={styles.button}>Добавить транзакцию</button>
-        </form>
-      </div>
+        <div style={styles.mainColumn}>
+          <div style={styles.summary}>
+            <div style={styles.summaryItem}>
+              <h2 style={styles.summaryTitle}>Баланс</h2>
+              <p style={styles.summaryValue}>{formatCurrency(data.balance)}</p>
+            </div>
+            <div style={styles.summaryItem}>
+              <h2 style={styles.summaryTitle}>Доходы</h2>
+              <p style={styles.income}>{formatCurrency(data.income)}</p>
+            </div>
+            <div style={styles.summaryItem}>
+              <h2 style={styles.summaryTitle}>Расходы</h2>
+              <p style={styles.expense}>{formatCurrency(data.expenses)}</p>
+            </div>
+          </div>
 
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Недавние Транзакции</h2>
-        {data.recent_transactions.length > 0 ? (
-          <ul style={styles.transactionList}>
-            {data.recent_transactions.map((transaction) => (
-              <li key={transaction.id} style={styles.transactionItem}>
-                <div style={styles.transactionDescription}>{transaction.description}</div>
-                <div style={{
-                  ...styles.transactionAmount,
-                  color: transaction.amount > 0 ? styles.income.color : styles.expense.color
-                }}>
-                  {formatCurrency(Math.abs(transaction.amount))}
-                </div>
-                <div style={styles.transactionDate}>{formatDate(transaction.date)}</div>
-                <div style={styles.transactionCategory}>
-                  {transaction.category?.name} ({transaction.category?.type})
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p style={styles.noTransactions}>Нет недавних транзакций</p>
-        )}
+          <div style={styles.section}>
+            <h2 style={styles.sectionTitle}>Добавить новую транзакцию</h2>
+            <form onSubmit={handleSubmit} style={styles.form}>
+              <input
+                type="text"
+                name="description"
+                value={newTransaction.description}
+                onChange={handleInputChange}
+                placeholder="Описание"
+                style={styles.input}
+                required
+              />
+              <input
+                type="number"
+                name="amount"
+                value={newTransaction.amount}
+                onChange={handleInputChange}
+                placeholder="Сумма"
+                style={styles.input}
+                required
+              />
+              <select
+                name="category"
+                value={newTransaction.category}
+                onChange={handleInputChange}
+                style={styles.input}
+                required
+              >
+                <option value="">Выберите категорию</option>
+                {categories.map(category => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
+                ))}
+              </select>
+              <input
+                type="date"
+                name="date"
+                value={newTransaction.date}
+                onChange={handleInputChange}
+                style={styles.input}
+                required
+              />
+              <button type="submit" style={styles.button}>Добавить транзакцию</button>
+            </form>
+          </div>
+
+          <div style={styles.section}>
+            <h2 style={styles.sectionTitle}>Недавние Транзакции</h2>
+            {data.recent_transactions.length > 0 ? (
+              <ul style={styles.transactionList}>
+                {data.recent_transactions.map((transaction) => (
+                  <li key={transaction.id} style={styles.transactionItem}>
+                    <div style={styles.transactionDescription}>{transaction.description}</div>
+                    <div style={{
+                      ...styles.transactionAmount,
+                      color: transaction.amount > 0 ? styles.income.color : styles.expense.color
+                    }}>
+                      {formatCurrency(Math.abs(transaction.amount))}
+                    </div>
+                    <div style={styles.transactionDate}>{formatDate(transaction.date)}</div>
+                    <div style={styles.transactionCategory}>
+                      {transaction.category?.name} ({transaction.category?.type})
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p style={styles.noTransactions}>Нет недавних транзакций</p>
+            )}
+          </div>
+        </div>
+
+        <div style={styles.chartColumn}>
+          <h2 style={styles.sectionTitle}>Распределение Расходов по Категориям</h2>
+          <PieChart width={400} height={300}>
+            <Pie
+              data={expenseCategoryData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              fill="#8884d8"
+              label
+            >
+              {expenseCategoryData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </div>
       </div>
     </div>
   );
@@ -221,15 +277,41 @@ const Dashboard = () => {
 const styles = {
   dashboard: {
     fontFamily: 'Arial, sans-serif',
-    maxWidth: '800px',
+    width: '100%',
     margin: '0 auto',
     padding: '20px',
     backgroundColor: '#1c1c1c',
-    color: '#ffd700'
+    color: '#ffd700',
+    transition: 'all 0.3s ease'
   },
   title: {
     textAlign: 'center',
-    color: '#ffd700'
+    color: '#ffd700',
+    transition: 'all 0.3s ease'
+  },
+  gridContainer: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 2fr 1fr',
+    gap: '20px',
+    width: '100%',
+    transition: 'all 0.3s ease',
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr',
+      gap: '10px'
+    }
+  },
+  chartColumn: {
+    backgroundColor: '#2c2c2c',
+    padding: '20px',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(255,215,0,0.1)',
+    transition: 'all 0.3s ease'
+  },
+  mainColumn: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+    transition: 'all 0.3s ease'
   },
   summary: {
     display: 'flex',
@@ -238,42 +320,51 @@ const styles = {
     backgroundColor: '#2c2c2c',
     padding: '20px',
     borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(255,215,0,0.1)'
+    boxShadow: '0 2px 4px rgba(255,215,0,0.1)',
+    transition: 'all 0.3s ease'
   },
   summaryItem: {
-    textAlign: 'center'
+    textAlign: 'center',
+    transition: 'all 0.3s ease'
   },
   summaryTitle: {
     color: '#ffd700',
-    marginBottom: '5px'
+    marginBottom: '5px',
+    transition: 'all 0.3s ease'
   },
   summaryValue: {
     fontSize: '24px',
     fontWeight: 'bold',
-    color: '#ffffff'
+    color: '#ffffff',
+    transition: 'all 0.3s ease'
   },
   income: {
     color: '#4caf50',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease'
   },
   expense: {
     color: '#f44336',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease'
   },
   section: {
     backgroundColor: '#2c2c2c',
     padding: '20px',
     borderRadius: '8px',
     marginBottom: '20px',
-    boxShadow: '0 2px 4px rgba(255,215,0,0.1)'
+    boxShadow: '0 2px 4px rgba(255,215,0,0.1)',
+    transition: 'all 0.3s ease'
   },
   sectionTitle: {
     color: '#ffd700',
-    marginBottom: '15px'
+    marginBottom: '15px',
+    transition: 'all 0.3s ease'
   },
   form: {
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    transition: 'all 0.3s ease'
   },
   input: {
     margin: '5px 0',
@@ -281,7 +372,8 @@ const styles = {
     borderRadius: '4px',
     border: '1px solid #ffd700',
     backgroundColor: '#1c1c1c',
-    color: '#ffffff'
+    color: '#ffffff',
+    transition: 'all 0.3s ease'
   },
   button: {
     margin: '10px 0',
@@ -290,43 +382,52 @@ const styles = {
     color: '#1c1c1c',
     border: 'none',
     borderRadius: '4px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   },
   transactionList: {
     listStyleType: 'none',
-    padding: 0
+    padding: 0,
+    transition: 'all 0.3s ease'
   },
   transactionItem: {
     marginBottom: '10px',
     borderBottom: '1px solid #ffd700',
-    paddingBottom: '10px'
+    paddingBottom: '10px',
+    transition: 'all 0.3s ease'
   },
   transactionDescription: {
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease'
   },
   transactionAmount: {
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease'
   },
   transactionDate: {
     fontSize: '0.9em',
-    color: '#cccccc'
+    color: '#cccccc',
+    transition: 'all 0.3s ease'
   },
   transactionCategory: {
     fontSize: '0.9em',
-    color: '#cccccc'
+    color: '#cccccc',
+    transition: 'all 0.3s ease'
   },
   loading: {
     textAlign: 'center',
     fontSize: '18px',
     color: '#ffd700',
-    margin: '20px 0'
+    margin: '20px 0',
+    transition: 'all 0.3s ease'
   },
   error: {
     textAlign: 'center',
     color: '#f44336',
-    margin: '20px 0'
-  },
-  retryButton: {
+    margin: '20px 0',
+    transition: 'all 0.3s ease'
+},
+retryButton: {
     padding: '10px 20px',
     fontSize: '16px',
     backgroundColor: '#ffd700',
@@ -334,12 +435,14 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    marginTop: '10px'
-  },
-  noTransactions: {
+    marginTop: '10px',
+    transition: 'all 0.3s ease'
+},
+noTransactions: {
     textAlign: 'center',
-    color: '#cccccc'
-  }
+    color: '#cccccc',
+    transition: 'all 0.3s ease'
+}
 };
 
 export default Dashboard;
