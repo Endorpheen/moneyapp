@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { toast } from 'react-toastify'; // Импортируем toast из react-toastify
+import { toast } from 'react-toastify';
 
 const axiosInstance = axios.create({
   baseURL: 'http://localhost:8000',
@@ -30,59 +30,44 @@ axiosInstance.interceptors.response.use(
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const accessToken = await refreshAccessToken();
-        originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+        const refreshToken = localStorage.getItem('refresh_token');
+        const response = await axios.post('/budget/api/token/refresh/', { refresh: refreshToken });
+        localStorage.setItem('access_token', response.data.access);
+        axiosInstance.defaults.headers['Authorization'] = `Bearer ${response.data.access}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        toast.error('Ваша сессия истекла. Пожалуйста, войдите снова.'); // Добавляем уведомление
+        toast.error('Ваша сессия истекла. Пожалуйста, войдите снова.');
         setTimeout(() => {
           window.location.href = '/login';
         }, 3000); // Добавляем задержку в 3 секунды
+        return Promise.reject(refreshError);
       }
     }
     return Promise.reject(error);
   }
 );
 
-const refreshAccessToken = async () => {
-  try {
-    const refreshToken = localStorage.getItem('refresh_token');
-    const response = await axios.post('/budget/api/token/refresh/', { refresh: refreshToken });
-    localStorage.setItem('access_token', response.data.access);
-    return response.data.access;
-  } catch (error) {
-    console.error('Token refresh failed:', error);
-    throw error;
-  }
-};
-
-// Добавляем механизм автоматического обновления токена
-const tokenExpirationTime = 5 * 60 * 1000; // 5 минут в миллисекундах
-let tokenRefreshInterval;
-
 const startTokenRefreshInterval = () => {
-  tokenRefreshInterval = setInterval(async () => {
-    try {
-      await refreshAccessToken();
-      console.log('Token refreshed successfully');
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      clearInterval(tokenRefreshInterval);
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      toast.error('Ваша сессия истекла. Пожалуйста, войдите снова.'); // Добавляем уведомление
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 3000); // Добавляем задержку в 3 секунды
+  const intervalTime = 4 * 60 * 1000; // 4 минуты
+  return setInterval(async () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken) {
+      try {
+        const response = await axios.post('/budget/api/token/refresh/', { refresh: refreshToken });
+        localStorage.setItem('access_token', response.data.access);
+        axiosInstance.defaults.headers['Authorization'] = `Bearer ${response.data.access}`;
+      } catch (error) {
+        console.error('Failed to refresh token:', error);
+      }
     }
-  }, tokenExpirationTime - 10000); // Обновляем токен за 10 секунд до истечения срока действия
+  }, intervalTime);
 };
 
-const stopTokenRefreshInterval = () => {
-  clearInterval(tokenRefreshInterval);
+const stopTokenRefreshInterval = (intervalId) => {
+  clearInterval(intervalId);
 };
 
 export { axiosInstance, startTokenRefreshInterval, stopTokenRefreshInterval };

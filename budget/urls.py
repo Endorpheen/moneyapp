@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from . import api
 from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import dashboard, transaction_list, add_transaction, budget_list, add_budget, dashboard_view, login_view
 
 urlpatterns = [
@@ -14,6 +15,7 @@ urlpatterns = [
     
     # API endpoints
     path('api/login/', login_view, name='login_view'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/dashboard/', api.DashboardView.as_view(), name='api_dashboard'),
     path('api/transactions/', api.TransactionListCreateView.as_view(), name='api_transactions'),
     path('api/transactions/<int:pk>/', api.TransactionDetailView.as_view(), name='api_transaction_detail'),
@@ -27,4 +29,4 @@ urlpatterns = [
     path('api/statistics/', api.StatisticsView.as_view(), name='api_statistics'),
     path('api/export-data/', api.ExportDataView.as_view(), name='api_export_data'),
     path('api/import-data/', api.ImportDataView.as_view(), name='api_import_data'),
-    ]
+]

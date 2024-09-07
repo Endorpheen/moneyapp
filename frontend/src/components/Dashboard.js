@@ -1,69 +1,104 @@
-import React, { useState, useEffect } from 'react';
-import { axiosInstance } from '../api/axiosConfig'; // Исправлен импорт
+import React, { useState, useEffect, useCallback } from 'react';
+import { axiosInstance, startTokenRefreshInterval, stopTokenRefreshInterval } from '../api/axiosConfig';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
-function Dashboard() {
-  const [data, setData] = useState(null);
+const Dashboard = () => {
+  const [data, setData] = useState({
+    balance: 0,
+    income: 0,
+    expenses: 0,
+    recent_transactions: []
+  });
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [newTransaction, setNewTransaction] = useState({
     description: '',
     amount: '',
-    category: '', // Изменено на category
+    category: '',
     date: new Date().toISOString().split('T')[0]
   });
 
+  const navigate = useNavigate();
+
   const categories = [
-    { id: 1, name: 'Продукты' },
-    { id: 2, name: 'Транспорт' },
-    { id: 3, name: 'Развлечения' },
-    { id: 4, name: 'Зарплата' }
+    { id: 1, name: 'Продукты', type: 'expense' },
+    { id: 2, name: 'Транспорт', type: 'expense' },
+    { id: 3, name: 'Развлечения', type: 'expense' },
+    { id: 4, name: 'Зарплата', type: 'income' }
   ];
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await axiosInstance.get('/budget/api/dashboard/');
-      // Сортируем транзакции по дате в порядке убывания
-      const sortedTransactions = response.data.recent_transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+      const sortedTransactions = response.data.recent_transactions
+        .sort((a, b) => {
+          // Сначала сортируем по дате (в обратном порядке)
+          const dateComparison = new Date(b.date) - new Date(a.date);
+          if (dateComparison !== 0) {
+            return dateComparison;
+          }
+          // Если даты одинаковые, сортируем по ID (в обратном порядке)
+          return b.id - a.id;
+        })
+        .slice(0, 10);
       setData({ ...response.data, recent_transactions: sortedTransactions });
     } catch (error) {
       console.error('Fetch error:', error);
-      setError(error.message);
+      if (error.response && error.response.status === 401) {
+        navigate('/login');
+        return;
+      }
+      setError(error.response?.data?.detail || 'Произошла ошибка при загрузке данных');
+      toast.error('Не удалось загрузить данные дашборда');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchData();
+    const intervalId = startTokenRefreshInterval();
+    return () => {
+      stopTokenRefreshInterval(intervalId);
+    };
+  }, [fetchData]);
 
   const handleInputChange = (e) => {
-    setNewTransaction({
-      ...newTransaction,
-      [e.target.name]: e.target.name === 'amount' ? parseFloat(e.target.value) : e.target.value
-    });
+    const { name, value } = e.target;
+    setNewTransaction(prev => ({
+      ...prev,
+      [name]: name === 'amount' ? parseFloat(value) || '' : value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Sending transaction data:', newTransaction); // Добавьте этот console.log
+      const selectedCategory = categories.find(cat => cat.id === parseInt(newTransaction.category));
+      const transactionType = selectedCategory ? selectedCategory.type : 'expense';
+      const amount = transactionType === 'expense' ? -Math.abs(newTransaction.amount) : Math.abs(newTransaction.amount);
+      
       await axiosInstance.post('/budget/api/transactions/', {
         ...newTransaction,
-        category_id: newTransaction.category // Изменено на category_id
+        amount: amount,
+        category_id: newTransaction.category
       });
       setNewTransaction({
         description: '',
         amount: '',
-        category: '', // Изменено на category
+        category: '',
         date: new Date().toISOString().split('T')[0]
       });
-      fetchData(); // Обновляем данные после добавления транзакции
+      await fetchData();
+      toast.success('Транзакция успешно добавлена');
     } catch (error) {
       console.error('Error adding transaction:', error);
-      console.log('Error response:', error.response); // Добавьте этот console.log
+      toast.error('Ошибка при добавлении транзакции: ' + (error.response?.data?.detail || 'Неизвестная ошибка'));
     }
   };
-
-  if (error) return <div style={styles.error}>Error: {error}</div>;
-  if (!data) return <div style={styles.loading}>Loading...</div>;
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(amount);
@@ -77,30 +112,19 @@ function Dashboard() {
     });
   };
 
-  const renderTransactions = () => {
-    if (!Array.isArray(data.recent_transactions) || data.recent_transactions.length === 0) {
-      return <p style={styles.noData}>Нет данных о транзакциях</p>;
-    }
+  if (loading) {
+    return <div style={styles.loading}>Загрузка данных...</div>;
+  }
+
+  if (error) {
     return (
-      <ul style={styles.transactionList}>
-        {data.recent_transactions.map((transaction, index) => (
-          <li key={index} style={styles.transactionItem}>
-            <div style={styles.transactionDescription}>{transaction.description || 'N/A'}</div>
-            <div style={{
-              ...styles.transactionAmount,
-              color: transaction.amount > 0 ? styles.income.color : styles.expense.color
-            }}>
-              {formatCurrency(Math.abs(transaction.amount))}
-            </div>
-            <div style={styles.transactionDate}>{formatDate(transaction.date)}</div>
-            <div style={styles.transactionCategory}>
-              {transaction.category?.name || 'N/A'} ({transaction.category?.type || 'N/A'})
-            </div>
-          </li>
-        ))}
-      </ul>
+      <div style={styles.error}>
+        <h2>Ошибка при загрузке данных</h2>
+        <p>{error}</p>
+        <button onClick={fetchData} style={styles.retryButton}>Попробовать снова</button>
+      </div>
     );
-  };
+  }
 
   return (
     <div style={styles.dashboard}>
@@ -143,7 +167,7 @@ function Dashboard() {
             required
           />
           <select
-            name="category" // Изменено на category
+            name="category"
             value={newTransaction.category}
             onChange={handleInputChange}
             style={styles.input}
@@ -168,11 +192,31 @@ function Dashboard() {
 
       <div style={styles.section}>
         <h2 style={styles.sectionTitle}>Недавние Транзакции</h2>
-        {renderTransactions()}
+        {data.recent_transactions.length > 0 ? (
+          <ul style={styles.transactionList}>
+            {data.recent_transactions.map((transaction) => (
+              <li key={transaction.id} style={styles.transactionItem}>
+                <div style={styles.transactionDescription}>{transaction.description}</div>
+                <div style={{
+                  ...styles.transactionAmount,
+                  color: transaction.amount > 0 ? styles.income.color : styles.expense.color
+                }}>
+                  {formatCurrency(Math.abs(transaction.amount))}
+                </div>
+                <div style={styles.transactionDate}>{formatDate(transaction.date)}</div>
+                <div style={styles.transactionCategory}>
+                  {transaction.category?.name} ({transaction.category?.type})
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p style={styles.noTransactions}>Нет недавних транзакций</p>
+        )}
       </div>
     </div>
   );
-}
+};
 
 const styles = {
   dashboard: {
@@ -271,19 +315,30 @@ const styles = {
     fontSize: '0.9em',
     color: '#cccccc'
   },
-  error: {
-    color: '#f44336',
-    textAlign: 'center',
-    fontSize: '18px'
-  },
   loading: {
-    color: '#ffd700',
     textAlign: 'center',
-    fontSize: '18px'
+    fontSize: '18px',
+    color: '#ffd700',
+    margin: '20px 0'
   },
-  noData: {
-    color: '#cccccc',
-    textAlign: 'center'
+  error: {
+    textAlign: 'center',
+    color: '#f44336',
+    margin: '20px 0'
+  },
+  retryButton: {
+    padding: '10px 20px',
+    fontSize: '16px',
+    backgroundColor: '#ffd700',
+    color: '#1c1c1c',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    marginTop: '10px'
+  },
+  noTransactions: {
+    textAlign: 'center',
+    color: '#cccccc'
   }
 };
 

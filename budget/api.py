@@ -18,7 +18,7 @@ class DashboardView(APIView):
         income = Transaction.objects.filter(user=user, category__type='income').aggregate(Sum('amount'))['amount__sum'] or 0
         expenses = abs(Transaction.objects.filter(user=user, category__type='expense').aggregate(Sum('amount'))['amount__sum'] or 0)
         balance = income - expenses
-        recent_transactions = Transaction.objects.filter(user=user).order_by('-date')[:5]
+        recent_transactions = Transaction.objects.filter(user=user).order_by('-date', '-id')[:10]
         budgets = Budget.objects.filter(user=user)
 
         data = {
@@ -36,7 +36,17 @@ class TransactionListCreateView(generics.ListCreateAPIView):
     renderer_classes = [JSONRenderer]
 
     def get_queryset(self):
-        return Transaction.objects.filter(user=self.request.user)
+        queryset = Transaction.objects.filter(user=self.request.user)
+        category = self.request.query_params.get('category', None)
+        date_from = self.request.query_params.get('date_from', None)
+        date_to = self.request.query_params.get('date_to', None)
+        
+        if category:
+            queryset = queryset.filter(category__name=category)
+        if date_from and date_to:
+            queryset = queryset.filter(date__range=[date_from, date_to])
+        
+        return queryset.order_by('-date', '-id')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -108,11 +118,14 @@ class StatisticsView(APIView):
 
     def get(self, request):
         user = request.user
-        # Здесь добавьте логику для вычисления статистики
+        total_income = Transaction.objects.filter(user=user, category__type='income').aggregate(Sum('amount'))['amount__sum'] or 0
+        total_expenses = abs(Transaction.objects.filter(user=user, category__type='expense').aggregate(Sum('amount'))['amount__sum'] or 0)
+        savings_rate = (total_income - total_expenses) / total_income * 100 if total_income > 0 else 0
+        
         return Response({
-            'total_income': 0,  # Замените на реальные вычисления
-            'total_expenses': 0,  # Замените на реальные вычисления
-            'savings_rate': 0,  # Замените на реальные вычисления
+            'total_income': total_income,
+            'total_expenses': total_expenses,
+            'savings_rate': round(savings_rate, 2),
         })
 
 class ExportDataView(APIView):
@@ -120,8 +133,17 @@ class ExportDataView(APIView):
     renderer_classes = [JSONRenderer]
 
     def get(self, request):
-        # Здесь добавьте логику для экспорта данных пользователя
-        return Response({'message': 'Data export functionality not implemented yet'})
+        user = request.user
+        transactions = TransactionSerializer(Transaction.objects.filter(user=user), many=True).data
+        categories = CategorySerializer(Category.objects.filter(user=user), many=True).data
+        budgets = BudgetSerializer(Budget.objects.filter(user=user), many=True).data
+        
+        export_data = {
+            'transactions': transactions,
+            'categories': categories,
+            'budgets': budgets,
+        }
+        return Response(export_data)
 
 class ImportDataView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -129,4 +151,5 @@ class ImportDataView(APIView):
 
     def post(self, request):
         # Здесь добавьте логику для импорта данных пользователя
+        # Например, проверка формата данных, валидация и сохранение
         return Response({'message': 'Data import functionality not implemented yet'})

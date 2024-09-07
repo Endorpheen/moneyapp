@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Transaction, Category, Budget
+from django.contrib.auth.models import User
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,3 +24,9 @@ class BudgetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Budget
         fields = ['id', 'category', 'amount', 'period']
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        read_only_fields = ['id', 'username']

@@ -6,11 +6,12 @@ from .forms import TransactionForm, BudgetForm
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework import status, generics
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 import logging
+from .serializers import TransactionSerializer, CategorySerializer, BudgetSerializer, UserProfileSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ def dashboard(request):
     expenses = abs(expenses)
     balance = income - expenses
     
-    recent_transactions = Transaction.objects.filter(user=request.user).order_by('-date')[:5]
+    recent_transactions = Transaction.objects.filter(user=request.user).order_by('-date', '-id')[:10]
     budgets = Budget.objects.filter(user=request.user)
     
     context = {
@@ -98,9 +99,9 @@ def add_budget(request):
 @csrf_exempt
 @api_view(['GET'])
 def dashboard_view(request):
-    print("Received request:", request.method, request.path)
-    print("User:", request.user)
-    print("Auth:", request.auth)
+    logger.debug("Received request: %s %s", request.method, request.path)
+    logger.debug("User: %s", request.user)
+    logger.debug("Auth: %s", request.auth)
     
     income = Transaction.objects.filter(user=request.user, category__type='income').aggregate(Sum('amount'))['amount__sum'] or 0
     expenses = Transaction.objects.filter(user=request.user, category__type='expense').aggregate(Sum('amount'))['amount__sum'] or 0
@@ -108,7 +109,10 @@ def dashboard_view(request):
     expenses = abs(expenses)
     balance = income - expenses
     
-    recent_transactions = Transaction.objects.filter(user=request.user).order_by('-date')[:5].values()
+    recent_transactions = Transaction.objects.filter(user=request.user).order_by('-date', '-id')[:10].values(
+        'id', 'amount', 'date', 'description', 'category__name', 'category__type'
+    )
+    
     budgets = Budget.objects.filter(user=request.user).values()
     
     data = {
@@ -124,8 +128,8 @@ def dashboard_view(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
-    print("Login view called")
-    print("Request data:", request.data)
+    logger.debug("Login view called")
+    logger.debug("Request data: %s", request.data)
     username = request.data.get('username')
     password = request.data.get('password')
     user = authenticate(username=username, password=password)
@@ -137,3 +141,82 @@ def login_view(request):
         })
     else:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class TransactionListCreateView(generics.ListCreateAPIView):
+    serializer_class = TransactionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Transaction.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class TransactionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = TransactionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Transaction.objects.filter(user=self.request.user)
+
+class CategoryListCreateView(generics.ListCreateAPIView):
+    serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Category.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Category.objects.filter(user=self.request.user)
+
+class BudgetListCreateView(generics.ListCreateAPIView):
+    serializer_class = BudgetSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Budget.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class BudgetDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = BudgetSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Budget.objects.filter(user=self.request.user)
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+class StatisticsView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Здесь логика для расчета статистики
+        return Response({"message": "Statistics endpoint"})
+
+class ExportDataView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Здесь логика для экспорта данных
+        return Response({"message": "Export data endpoint"})
+
+class ImportDataView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # Здесь логика для импорта данных
+        return Response({"message": "Import data endpoint"})
