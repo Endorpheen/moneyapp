@@ -121,3 +121,32 @@ All endpoints require authentication using JWT (JSON Web Tokens).
 - **URL**: `/budget/api/import-data/`
 - **Method**: `POST`
 - **Note**: Implementation pending
+
+## Swagger UI
+
+Our API now comes with Swagger UI integration for easy exploration and testing of endpoints.
+
+To access the Swagger UI, navigate to:
+
+http://[your-domain]/api/schema/swagger-ui/
+
+(Replace [your-domain] with your actual domain or use localhost:8000 for local development)
+
+### Features:
+- Interactive API documentation
+- Test API endpoints directly from the browser
+- Detailed request and response information
+- Authentication support
+- Easy-to-read API schema
+
+### How to use:
+1. Navigate to the Swagger UI URL
+2. Click on an endpoint to expand its details
+3. Click "Try it out" to test the endpoint
+4. Fill in any required parameters
+5. Click "Execute" to send the request
+6. View the response directly in the browser
+
+Note: Some endpoints may require authentication. Use the "Authorize" button at the top of the page to input your credentials.
+
+Happy API exploring!
