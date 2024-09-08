@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Sum
+from django.utils import timezone
 
 class Category(models.Model):
     CATEGORY_TYPES = [
@@ -24,9 +26,13 @@ class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
-        if self.category.type == 'expense' and self.amount > 0:
+        if self.category and self.category.type == 'expense' and self.amount > 0:
             self.amount = -self.amount
         super().save(*args, **kwargs)
+
+    @property
+    def transaction_type(self):
+        return 'income' if self.amount >= 0 else 'expense'
 
     def __str__(self):
         return f"{self.amount} - {self.category} - {self.date}"
@@ -41,6 +47,17 @@ class Budget(models.Model):
     def __str__(self):
         return f"{self.category} - {self.amount}"
 
+    def remaining_budget(self):
+        current_date = timezone.now().date()
+        if current_date < self.start_date or current_date > self.end_date:
+            return 0
+        spent = Transaction.objects.filter(
+            user=self.user,
+            category=self.category,
+            date__range=(self.start_date, self.end_date)
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        return self.amount + spent  # spent is negative for expenses
+
 class TotalBudget(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     start_date = models.DateField()
@@ -49,3 +66,22 @@ class TotalBudget(models.Model):
 
     def __str__(self):
         return f"Total Budget: {self.amount}"
+
+    def total_remaining_budget(self):
+        current_date = timezone.now().date()
+        if current_date < self.start_date or current_date > self.end_date:
+            return 0
+        spent = Transaction.objects.filter(
+            user=self.user,
+            date__range=(self.start_date, self.end_date)
+        ).aggregate(Sum('amount'))['amount__sum'] or 0
+        return self.amount + spent  # spent is negative for expenses
+    
+class UserSettings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='settings')
+    notifications_enabled = models.BooleanField(default=False)
+    dark_mode = models.BooleanField(default=True)
+    language = models.CharField(max_length=2, default='ru', choices=[('ru', 'Russian'), ('en', 'English')])
+
+    def __str__(self):
+        return f"{self.user.username}'s settings"   
