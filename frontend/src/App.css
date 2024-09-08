@@ -36,3 +36,108 @@
     transform: rotate(360deg);
   }
 }
+
+/* Новые стили для навигационного меню */
+.nav-container {
+  background-color: #2C2C2C;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #FFD700;
+}
+
+.nav-menu {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  margin-left: 20px;
+}
+
+.nav-link {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  padding-bottom: 5px;
+  transition: border-bottom 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  border-bottom: 2px solid #FFD700;
+}
+
+.user-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #FFD700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #1E1E1E;
+}
+
+@media (max-width: 768px) {
+  .nav-menu {
+    display: none;
+  }
+  .burger-menu {
+    display: block;
+    font-size: 24px;
+    cursor: pointer;
+  }
+}
+
+.user-menu-container {
+  position: relative;
+}
+
+.user-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #FFD700;
+  color: #1E1E1E;
+  border: none;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.user-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #2C2C2C;
+  border: 1px solid #FFD700;
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+.user-menu button {
+  background: none;
+  border: none;
+  color: #FFFFFF;
+  padding: 5px 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.user-menu button:hover {
+  background-color: #3C3C3C;
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { axiosInstance, startTokenRefreshInterval, stopTokenRefreshInterval } from '../api/axiosConfig';
+import axiosInstance, { startTokenRefreshInterval, stopTokenRefreshInterval } from '../api/axiosConfig';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
@@ -19,7 +19,9 @@ const Dashboard = () => {
     balance: 0,
     income: 0,
     expenses: 0,
-    recent_transactions: []
+    recent_transactions: [],
+    budgets: [],
+    total_budget: null
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -143,11 +145,13 @@ const Dashboard = () => {
     );
   }
 
+  // Данные для графика доходов и расходов
   const incomeExpenseData = [
     { name: 'Доходы', Доходы: data.income },
     { name: 'Расходы', Расходы: data.expenses }
   ];
 
+  // Данные для круговой диаграммы расходов по категориям
   const expenseCategoryData = categories
     .filter(cat => cat.type === 'expense')
     .map(cat => ({
@@ -193,6 +197,15 @@ const Dashboard = () => {
               <p style={styles.expense}>{formatCurrency(data.expenses)}</p>
             </div>
           </div>
+
+          {data.total_budget && (
+            <div style={styles.section}>
+              <h2 style={styles.sectionTitle}>Общий Бюджет</h2>
+              <p>Сумма: {formatCurrency(data.total_budget.amount)}</p>
+              <p>Оставшийся бюджет: {formatCurrency(data.total_budget.total_remaining_budget)}</p>
+              <p>Период: {formatDate(data.total_budget.start_date)} - {formatDate(data.total_budget.end_date)}</p>
+            </div>
+          )}
 
           <div style={styles.section}>
             <h2 style={styles.sectionTitle}>Добавить новую транзакцию</h2>
@@ -254,7 +267,7 @@ const Dashboard = () => {
                     </div>
                     <div style={styles.transactionDate}>{formatDate(transaction.date)}</div>
                     <div style={styles.transactionCategory}>
-                      {transaction.category?.name} ({transaction.category?.type})
+                      {transaction.category?.name} ({transaction.transaction_type})
                     </div>
                   </li>
                 ))}
@@ -287,6 +300,7 @@ const Dashboard = () => {
           </PieChart>
         </div>
       </div>
+
       <Footer />
     </div>
   );
@@ -333,6 +347,13 @@ const styles = {
       gridTemplateColumns: '1fr',
       gap: '10px'
     }
+  },
+  chartColumn: {
+    backgroundColor: '#2c2c2c',
+    padding: '20px',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(255,215,0,0.1)',
+    transition: 'all 0.3s ease'
   },
   mainColumn: {
     display: 'flex',
@@ -471,15 +492,11 @@ const styles = {
     transition: 'all 0.3s ease'
   },
   footer: {
-    position: 'fixed',
-    bottom: 0,
-    left: 0,
-    width: '100%',
     textAlign: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    color: 'white',
-    padding: '10px 0',
-    fontSize: '0.8em',
+    marginTop: '20px',
+    padding: '10px',
+    borderTop: '1px solid #ffd700',
+    color: '#cccccc',
     transition: 'all 0.3s ease'
   }
 };

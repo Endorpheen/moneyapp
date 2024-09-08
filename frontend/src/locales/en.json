@@ -1,0 +1,64 @@
+{
+    "header": {
+      "title": "Money App",
+      "dashboard": "Dashboard",
+      "transactions": "Transactions",
+      "addTransaction": "Add Transaction",
+      "budgets": "Budgets",
+      "addBudget": "Add Budget"
+    },
+    "dashboard": {
+      "title": "Financial Dashboard",
+      "incomeExpenses": "Income and Expenses",
+      "balance": "Balance",
+      "income": "Income",
+      "expenses": "Expenses",
+      "addTransaction": "Add New Transaction",
+      "recentTransactions": "Recent Transactions",
+      "expensesByCategory": "Expenses by Category"
+    },
+    "transactions": {
+      "title": "Transactions",
+      "filterPlaceholder": "Filter transactions...",
+      "date": "Date",
+      "description": "Description",
+      "amount": "Amount"
+    },
+    "addTransaction": {
+      "amount": "Amount",
+      "amountPlaceholder": "Enter amount",
+      "date": "Date",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter description",
+      "category": "Category",
+      "submit": "Add Transaction",
+      "success": "Transaction added successfully"
+    },
+    "settings": {
+      "title": "Settings",
+      "notifications": "Enable notifications",
+      "darkMode": "Dark theme",
+      "language": "Language",
+      "save": "Save settings",
+      "saveSuccess": "Settings saved successfully"
+    },
+    "errors": {
+      "fetchCategories": "Error fetching categories",
+      "addTransaction": "Error adding transaction",
+      "loadSettings": "Error loading settings",
+      "saveSettings": "Error saving settings"
+    },
+    "languages": {
+      "en": "English",
+      "ru": "Russian"
+    },
+    "categories": {
+      "products": "Products",
+      "transport": "Transport",
+      "entertainment": "Entertainment"
+    },
+    "transactionTypes": {
+      "expense": "expense",
+      "income": "income"
+    }
+  }

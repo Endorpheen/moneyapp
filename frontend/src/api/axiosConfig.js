@@ -42,7 +42,7 @@ axiosInstance.interceptors.response.use(
         toast.error('Ваша сессия истекла. Пожалуйста, войдите снова.');
         setTimeout(() => {
           window.location.href = '/login';
-        }, 3000); // Добавляем задержку в 3 секунды
+        }, 3000);
         return Promise.reject(refreshError);
       }
     }
@@ -70,4 +70,5 @@ const stopTokenRefreshInterval = (intervalId) => {
   clearInterval(intervalId);
 };
 
-export { axiosInstance, startTokenRefreshInterval, stopTokenRefreshInterval };
+export { startTokenRefreshInterval, stopTokenRefreshInterval };
+export default axiosInstance;

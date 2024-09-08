@@ -1,0 +1,47 @@
+{
+    "dashboard": {
+      "title": "Финансовый Дашборд",
+      "incomeExpenses": "Доходы и Расходы",
+      "balance": "Баланс",
+      "income": "Доходы",
+      "expenses": "Расходы",
+      "addTransaction": "Добавить новую транзакцию",
+      "recentTransactions": "Недавние Транзакции",
+      "expensesByCategory": "Расходы по Категориям"
+    },
+    "transactions": {
+      "title": "Транзакции",
+      "filterPlaceholder": "Фильтр транзакций...",
+      "date": "Дата",
+      "description": "Описание",
+      "amount": "Сумма"
+    },
+    "addTransaction": {
+      "amount": "Сумма",
+      "amountPlaceholder": "Введите сумму",
+      "date": "Дата",
+      "description": "Описание",
+      "descriptionPlaceholder": "Введите описание",
+      "category": "Категория",
+      "submit": "Добавить транзакцию",
+      "success": "Транзакция успешно добавлена"
+    },
+    "settings": {
+      "title": "Настройки",
+      "notifications": "Включить уведомления",
+      "darkMode": "Темная тема",
+      "language": "Язык",
+      "save": "Сохранить настройки",
+      "saveSuccess": "Настройки успешно сохранены"
+    },
+    "errors": {
+      "fetchCategories": "Ошибка при загрузке категорий",
+      "addTransaction": "Ошибка при добавлении транзакции",
+      "loadSettings": "Ошибка при загрузке настроек",
+      "saveSettings": "Ошибка при сохранении настроек"
+    },
+    "languages": {
+      "en": "Английский",
+      "ru": "Русский"
+    }
+  }
