@@ -16,6 +16,8 @@ A full-stack web application for managing personal finances. Built with Django R
 - **Authentication:** JWT
 
 ## Installation
+
+### For Development (Test) Build
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/MoneyApp.git
@@ -29,12 +31,21 @@ python manage.py migrate
 # Create a superuser for Django admin
 python manage.py createsuperuser
 
-python manage.py runserver
+python manage.py runserver  # The backend will run on http://localhost:8000
 
 # Set up the frontend
 cd ../frontend
 npm install
-npm start
+npm start  # The frontend will run on http://localhost:3000
+```
+
+### For Production Build
+To run the production version on `http://localhost:41709`, follow these steps:
+```bash
+# Build the frontend for production
+cd frontend
+npm run build
+serve -s build -l 41709  # Serve the production build on http://localhost:41709
 ```
 
 ## Usage
@@ -57,3 +68,4 @@ We welcome contributions! Please follow these steps:
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
