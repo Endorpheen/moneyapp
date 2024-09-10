@@ -24,7 +24,6 @@ git clone https://github.com/yourusername/MoneyApp.git
 cd MoneyApp
 
 # Set up the backend
-cd backend
 pip install -r requirements.txt
 python manage.py migrate
 
@@ -47,6 +46,17 @@ cd frontend
 npm run build
 serve -s build -l 41709  # Serve the production build on http://localhost:41709
 ```
+### Environment Variables
+To manage sensitive information like API keys or database credentials, you need to create a `.env` file in the project root.
+
+Example `.env` file for development:
+```
+DEBUG=True  # Only use for development. Set DEBUG=False in production.
+SECRET_KEY=your-secret-key from settings.py
+DATABASE_URL=sqlite:///db.sqlite3
+```
+
+Make sure to keep the **`SECRET_KEY`** safe, as it is critical for the security of your application.
 
 ## Usage
 1. **Register/Login:** Use the provided forms to register or login.
