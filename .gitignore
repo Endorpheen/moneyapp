@@ -7,3 +7,8 @@ new_env/
 .env.env
 .env
 node_modules/
+
+# Database backups
+/database_backups/*
+!/database_backups/.gitkeep
+/scripts/backup_db.sh

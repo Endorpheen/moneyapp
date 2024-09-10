@@ -35,7 +35,7 @@ class Transaction(models.Model):
         return 'income' if self.amount >= 0 else 'expense'
 
     def __str__(self):
-        return f"{self.amount} - {self.category} - {self.date}"
+        return f"{self.amount:.2f} - {self.category} - {self.date}"
 
 class Budget(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -45,16 +45,16 @@ class Budget(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.category} - {self.amount}"
+        return f"{self.category} - {self.amount:.2f}"
 
     def remaining_budget(self):
         current_date = timezone.now().date()
         if current_date < self.start_date or current_date > self.end_date:
-            return 0
+            return self.amount
         spent = Transaction.objects.filter(
             user=self.user,
             category=self.category,
-            date__range=(self.start_date, self.end_date)
+            date__range=(self.start_date, current_date)
         ).aggregate(Sum('amount'))['amount__sum'] or 0
         return self.amount + spent  # spent is negative for expenses
 
@@ -65,18 +65,18 @@ class TotalBudget(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Total Budget: {self.amount}"
+        return f"Total Budget: {self.amount:.2f}"
 
     def total_remaining_budget(self):
         current_date = timezone.now().date()
         if current_date < self.start_date or current_date > self.end_date:
-            return 0
+            return self.amount
         spent = Transaction.objects.filter(
             user=self.user,
-            date__range=(self.start_date, self.end_date)
+            date__range=(self.start_date, current_date)
         ).aggregate(Sum('amount'))['amount__sum'] or 0
         return self.amount + spent  # spent is negative for expenses
-    
+
 class UserSettings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='settings')
     notifications_enabled = models.BooleanField(default=False)
@@ -84,4 +84,4 @@ class UserSettings(models.Model):
     language = models.CharField(max_length=2, default='ru', choices=[('ru', 'Russian'), ('en', 'English')])
 
     def __str__(self):
-        return f"{self.user.username}'s settings"   
+        return f"{self.user.username}'s settings"
