@@ -4,11 +4,13 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
+
 const Footer = () => {
   return (
     <div style={styles.footer}>
       <p>Idea and produce by end0</p>
-      <p>Code: Claude V3.5 DeepSeek-V2.5</p>
+      <p>Code: Claude V3.5 DeepSeek-V2.5 GPT 4o</p>
+      <p>Money App Beta V1.0</p>
       <p>Special thx to BagiraMur ❤️</p>
     </div>
   );
@@ -23,6 +25,7 @@ const Dashboard = () => {
     budgets: [],
     total_budget: null
   });
+  const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [newTransaction, setNewTransaction] = useState({
@@ -34,12 +37,15 @@ const Dashboard = () => {
 
   const navigate = useNavigate();
 
-  const categories = [
-    { id: 1, name: 'Продукты', type: 'expense' },
-    { id: 2, name: 'Транспорт', type: 'expense' },
-    { id: 3, name: 'Развлечения', type: 'expense' },
-    { id: 4, name: 'Зарплата', type: 'income' }
-  ];
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get('/budget/api/categories/');
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Ошибка при загрузке категорий:', error);
+      toast.error('Не удалось загрузить категории');
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -47,13 +53,7 @@ const Dashboard = () => {
     try {
       const response = await axiosInstance.get('/budget/api/dashboard/');
       const sortedTransactions = response.data.recent_transactions
-        .sort((a, b) => {
-          const dateComparison = new Date(b.date) - new Date(a.date);
-          if (dateComparison !== 0) {
-            return dateComparison;
-          }
-          return b.id - a.id;
-        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, 10);
       setData({ ...response.data, recent_transactions: sortedTransactions });
     } catch (error) {
@@ -69,13 +69,40 @@ const Dashboard = () => {
     }
   }, [navigate]);
 
+  const handleResetTransactions = async () => {
+    if (window.confirm("Вы уверены, что хотите удалить все транзакции? Это действие необратимо.")) {
+      try {
+        await axiosInstance.delete('/budget/api/transactions/delete_all/');
+        toast.success("Все транзакции успешно удалены");
+        fetchData(); // Обновляем данные после сброса
+      } catch (error) {
+        console.error("Ошибка при удалении транзакций:", error);
+        toast.error("Не удалось удалить транзакции");
+      }
+    }
+  };
+
+  const handleResetBudgets = async () => {
+    if (window.confirm("Вы уверены, что хотите удалить все бюджеты? Это действие необратимо.")) {
+      try {
+        await axiosInstance.delete('/budget/api/budgets/delete_all/');
+        toast.success("Все бюджеты успешно удалены");
+        fetchData(); // Обновляем данные после сброса
+      } catch (error) {
+        console.error("Ошибка при удалении бюджетов:", error);
+        toast.error("Не удалось удалить бюджеты");
+      }
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchCategories();
     const intervalId = startTokenRefreshInterval();
     return () => {
       stopTokenRefreshInterval(intervalId);
     };
-  }, [fetchData]);
+  }, [fetchData, fetchCategories]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -145,13 +172,11 @@ const Dashboard = () => {
     );
   }
 
-  // Данные для графика доходов и расходов
   const incomeExpenseData = [
     { name: 'Доходы', Доходы: data.income },
     { name: 'Расходы', Расходы: data.expenses }
   ];
 
-  // Данные для круговой диаграммы расходов по категориям
   const expenseCategoryData = categories
     .filter(cat => cat.type === 'expense')
     .map(cat => ({
@@ -167,7 +192,7 @@ const Dashboard = () => {
         <h1 style={styles.title}>Финансовый Дашборд</h1>
         <button onClick={handleLogout} style={styles.logoutButton}>Выйти</button>
       </div>
-      
+
       <div style={styles.gridContainer}>
         <div style={styles.chartColumn}>
           <h2 style={styles.sectionTitle}>Доходы и Расходы</h2>
@@ -289,16 +314,24 @@ const Dashboard = () => {
               cy="50%"
               outerRadius={80}
               fill="#8884d8"
-              label
             >
               {expenseCategoryData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip formatter={(value, name) => [`${value} руб.`, `${name}`]} />
             <Legend />
           </PieChart>
         </div>
+      </div>
+
+      <div>
+        <button onClick={handleResetTransactions} style={styles.resetButton}>
+          Удалить все транзакции
+        </button>
+        <button onClick={handleResetBudgets} style={styles.resetButton}>
+          Удалить все бюджеты
+        </button>
       </div>
 
       <Footer />
@@ -433,6 +466,17 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.3s ease'
   },
+  resetButton: {
+    margin: '10px',
+    padding: '10px 20px',
+    backgroundColor: '#f44336',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '16px',
+    transition: 'all 0.3s ease',
+  },
   transactionList: {
     listStyleType: 'none',
     padding: 0,
@@ -502,3 +546,4 @@ const styles = {
 };
 
 export default Dashboard;
+

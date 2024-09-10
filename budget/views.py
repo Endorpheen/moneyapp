@@ -139,6 +139,24 @@ def login_view(request):
         })
     else:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+### Новые функции для удаления всех транзакций и всех бюджетов ###
+@csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_all_transactions(request):
+    user = request.user
+    Transaction.objects.filter(user=user).delete()
+    return Response({"message": "Все транзакции удалены"}, status=204)
+
+@csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_all_budgets(request):
+    user = request.user
+    Budget.objects.filter(user=user).delete()
+    return Response({"message": "Все бюджеты удалены"}, status=204)
+###    
 
 class TransactionListCreateView(generics.ListCreateAPIView):
     serializer_class = TransactionSerializer

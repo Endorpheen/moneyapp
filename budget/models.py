@@ -18,6 +18,7 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = "Categories"
 
+
 class Transaction(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
@@ -37,12 +38,19 @@ class Transaction(models.Model):
     def __str__(self):
         return f"{self.amount} - {self.category} - {self.date}"
 
+
 class Budget(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     start_date = models.DateField()
     end_date = models.DateField()
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        # Если категория не указана, использовать категорию "Общий" как дефолтную
+        if not self.category:
+            self.category = Category.objects.get_or_create(name="Общий", defaults={'type': 'expense'})[0]
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.category} - {self.amount}"
@@ -51,12 +59,22 @@ class Budget(models.Model):
         current_date = timezone.now().date()
         if current_date < self.start_date or current_date > self.end_date:
             return 0
-        spent = Transaction.objects.filter(
-            user=self.user,
-            category=self.category,
-            date__range=(self.start_date, self.end_date)
-        ).aggregate(Sum('amount'))['amount__sum'] or 0
-        return self.amount + spent  # spent is negative for expenses
+        
+        # Для бюджета с категорией "Общий" нужно учитывать все транзакции, и доходы и расходы
+        if self.category.name == "Общий":
+            spent = Transaction.objects.filter(
+                user=self.user,
+                date__range=(self.start_date, self.end_date)
+            ).aggregate(Sum('amount'))['amount__sum'] or 0
+        else:
+            spent = Transaction.objects.filter(
+                user=self.user,
+                category=self.category,
+                date__range=(self.start_date, self.end_date)
+            ).aggregate(Sum('amount'))['amount__sum'] or 0
+        
+        return self.amount + spent  # Расходы будут отрицательными, а доходы положительными
+
 
 class TotalBudget(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -76,7 +94,8 @@ class TotalBudget(models.Model):
             date__range=(self.start_date, self.end_date)
         ).aggregate(Sum('amount'))['amount__sum'] or 0
         return self.amount + spent  # spent is negative for expenses
-    
+
+
 class UserSettings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='settings')
     notifications_enabled = models.BooleanField(default=False)
@@ -84,4 +103,4 @@ class UserSettings(models.Model):
     language = models.CharField(max_length=2, default='ru', choices=[('ru', 'Russian'), ('en', 'English')])
 
     def __str__(self):
-        return f"{self.user.username}'s settings"   
+        return f"{self.user.username}'s settings"

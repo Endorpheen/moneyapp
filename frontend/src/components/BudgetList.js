@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosConfig';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { toast } from 'react-toastify';
 
 const BudgetList = () => {
   const [budgets, setBudgets] = useState([]);
@@ -33,8 +34,21 @@ const BudgetList = () => {
       const response = await axiosInstance.post('/budget/api/budgets/', newBudget);
       setBudgets([...budgets, response.data]);
       setNewBudget({ amount: '', start_date: '', end_date: '', category: '' });
+      toast.success('Бюджет успешно добавлен!');
     } catch (error) {
       console.error('Error adding budget:', error);
+      toast.error('Ошибка при добавлении бюджета');
+    }
+  };
+
+  const deleteBudget = async (budgetId) => {
+    try {
+      await axiosInstance.delete(`/budget/api/budgets/${budgetId}/`);
+      setBudgets(budgets.filter((budget) => budget.id !== budgetId));
+      toast.success('Бюджет успешно удалён');
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+      toast.error('Ошибка при удалении бюджета');
     }
   };
 
@@ -54,6 +68,7 @@ const BudgetList = () => {
               {format(new Date(budget.start_date), 'dd MMMM yyyy', { locale: ru })} - 
               {format(new Date(budget.end_date), 'dd MMMM yyyy', { locale: ru })}
             </p>
+            <button style={styles.deleteButton} onClick={() => deleteBudget(budget.id)}>Удалить</button>
           </div>
         ))}
       </div>
@@ -137,6 +152,16 @@ const styles = {
   budgetDates: {
     fontSize: '14px',
     color: '#CCCCCC',
+  },
+  deleteButton: {
+    backgroundColor: '#f44336',
+    color: 'white',
+    padding: '10px',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    marginTop: '10px',
+    fontWeight: 'bold',
   },
   addBudgetForm: {
     backgroundColor: '#2C2C2C',

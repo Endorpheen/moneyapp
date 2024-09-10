@@ -71,6 +71,14 @@ All endpoints require authentication using JWT (JSON Web Tokens).
 - **Methods**: `GET`, `PUT`, `DELETE`
 - **Success Response**: Transaction object
 
+### Delete All Transactions
+- **URL**: `/budget/api/transactions/delete_all/`
+- **Method**: `DELETE`
+- **Description**: Delete all transactions.
+- **Success Response**:
+  - **Code**: 204 No Content
+  - **Content**: No response body
+
 ## Categories
 ### List/Create Categories
 - **URL**: `/budget/api/categories/`
@@ -94,6 +102,14 @@ All endpoints require authentication using JWT (JSON Web Tokens).
 - **URL**: `/budget/api/budgets/<int:pk>/`
 - **Methods**: `GET`, `PUT`, `DELETE`
 - **Success Response**: Budget object
+
+### Delete All Budgets
+- **URL**: `/budget/api/budgets/delete_all/`
+- **Method**: `DELETE`
+- **Description**: Delete all budgets.
+- **Success Response**:
+  - **Code**: 204 No Content
+  - **Content**: No response body
 
 ## User Profile
 - **URL**: `/budget/api/user-profile/`

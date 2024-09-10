@@ -26,11 +26,14 @@ urlpatterns = [
     path('api/budgets/<int:pk>/', api.BudgetDetailView.as_view(), name='api_budget_detail'),
     path('api/users/', api.UserListView.as_view(), name='api_users'),  # Добавленный маршрут
     
-
     # Новые API endpoints
     path('api/user-profile/', api.UserProfileView.as_view(), name='api_user_profile'),
     path('api/statistics/', api.StatisticsView.as_view(), name='api_statistics'),
     path('api/export-data/', api.ExportDataView.as_view(), name='api_export_data'),
     path('api/import-data/', api.ImportDataView.as_view(), name='api_import_data'),
     path('api/user-settings/', UserSettingsView.as_view(), name='api_user_settings'),
+
+    # Маршруты для удаления всех транзакций и бюджетов
+    path('api/transactions/delete_all/', views.delete_all_transactions, name='delete_all_transactions'),
+    path('api/budgets/delete_all/', views.delete_all_budgets, name='delete_all_budgets'),
 ]
