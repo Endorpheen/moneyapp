@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
-
 const Footer = () => {
   return (
     <div style={styles.footer}>
@@ -184,7 +183,7 @@ const Dashboard = () => {
       value: data.recent_transactions.filter(t => t.category?.id === cat.id).reduce((sum, t) => sum + Math.abs(t.amount), 0)
     }));
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9467bd']; // Добавлен фиолетовый цвет
 
   return (
     <div style={styles.dashboard}>
@@ -192,7 +191,7 @@ const Dashboard = () => {
         <h1 style={styles.title}>Финансовый Дашборд</h1>
         <button onClick={handleLogout} style={styles.logoutButton}>Выйти</button>
       </div>
-
+  
       <div style={styles.gridContainer}>
         <div style={styles.chartColumn}>
           <h2 style={styles.sectionTitle}>Доходы и Расходы</h2>
@@ -206,7 +205,7 @@ const Dashboard = () => {
             <Bar dataKey="Расходы" fill="#f44336" />
           </BarChart>
         </div>
-
+  
         <div style={styles.mainColumn}>
           <div style={styles.summary}>
             <div style={styles.summaryItem}>
@@ -222,7 +221,7 @@ const Dashboard = () => {
               <p style={styles.expense}>{formatCurrency(data.expenses)}</p>
             </div>
           </div>
-
+  
           {data.total_budget && (
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Общий Бюджет</h2>
@@ -231,7 +230,7 @@ const Dashboard = () => {
               <p>Период: {formatDate(data.total_budget.start_date)} - {formatDate(data.total_budget.end_date)}</p>
             </div>
           )}
-
+  
           <div style={styles.section}>
             <h2 style={styles.sectionTitle}>Добавить новую транзакцию</h2>
             <form onSubmit={handleSubmit} style={styles.form}>
@@ -276,7 +275,7 @@ const Dashboard = () => {
               <button type="submit" style={styles.button}>Добавить транзакцию</button>
             </form>
           </div>
-
+  
           <div style={styles.section}>
             <h2 style={styles.sectionTitle}>Недавние Транзакции</h2>
             {data.recent_transactions.length > 0 ? (
@@ -302,7 +301,7 @@ const Dashboard = () => {
             )}
           </div>
         </div>
-
+  
         <div style={styles.chartColumn}>
           <h2 style={styles.sectionTitle}>Распределение Расходов по Категориям</h2>
           <PieChart width={400} height={300}>
@@ -324,7 +323,7 @@ const Dashboard = () => {
           </PieChart>
         </div>
       </div>
-
+  
       <div>
         <button onClick={handleResetTransactions} style={styles.resetButton}>
           Удалить все транзакции
@@ -333,11 +332,11 @@ const Dashboard = () => {
           Удалить все бюджеты
         </button>
       </div>
-
+  
       <Footer />
     </div>
   );
-};
+}
 
 const styles = {
   dashboard: {
@@ -347,7 +346,7 @@ const styles = {
     padding: '20px',
     backgroundColor: '#1c1c1c',
     color: '#ffd700',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   header: {
     display: 'flex',
@@ -358,41 +357,50 @@ const styles = {
   title: {
     textAlign: 'center',
     color: '#ffd700',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   logoutButton: {
     padding: '10px 20px',
-    backgroundColor: '#f44336',
+    backgroundColor: '#f44336', // Красный фон
     color: 'white',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '16px',
-    transition: 'all 0.3s ease',
+    transition: 'background-color 0.3s ease', // Плавный переход
+    marginLeft: 'auto', // Сдвиг влево, если нужно, чтобы кнопка не прилипала к правому краю
+    marginRight: '10px', // Отступ от правого края
   },
   gridContainer: {
     display: 'grid',
     gridTemplateColumns: '1fr 2fr 1fr',
     gap: '20px',
     width: '100%',
+    height: 'auto',  // Делаем высоту контейнеров автоматически подстраивающейся
     transition: 'all 0.3s ease',
     '@media (max-width: 768px)': {
       gridTemplateColumns: '1fr',
-      gap: '10px'
-    }
-  },
+      gap: '10px',
+    },
+  },  
   chartColumn: {
     backgroundColor: '#2c2c2c',
     padding: '20px',
     borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(255,215,0,0.1)',
-    transition: 'all 0.3s ease'
-  },
+    transition: 'all 0.3s ease',
+    display: 'flex',               // Используем Flexbox
+    flexDirection: 'column',        // Элементы располагаются по вертикали
+    justifyContent: 'flex-start',   // Элементы выравниваются к верху
+    alignItems: 'center',           // Центрируем по горизонтали
+    textAlign: 'center',            // Текст выравниваем по центру
+    height: '100%',                 // Растягиваем контейнер по высоте
+  },  
   mainColumn: {
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   summary: {
     display: 'flex',
@@ -402,32 +410,32 @@ const styles = {
     padding: '20px',
     borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(255,215,0,0.1)',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   summaryItem: {
     textAlign: 'center',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   summaryTitle: {
     color: '#ffd700',
     marginBottom: '5px',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   summaryValue: {
     fontSize: '24px',
     fontWeight: 'bold',
     color: '#ffffff',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   income: {
     color: '#4caf50',
     fontWeight: 'bold',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   expense: {
     color: '#f44336',
     fontWeight: 'bold',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   section: {
     backgroundColor: '#2c2c2c',
@@ -435,17 +443,18 @@ const styles = {
     borderRadius: '8px',
     marginBottom: '20px',
     boxShadow: '0 2px 4px rgba(255,215,0,0.1)',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   sectionTitle: {
     color: '#ffd700',
     marginBottom: '15px',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
+    marginLeft: '-10px', // Сдвиг заголовка влево для центрирования над графиком
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   input: {
     margin: '5px 0',
@@ -454,7 +463,7 @@ const styles = {
     border: '1px solid #ffd700',
     backgroundColor: '#1c1c1c',
     color: '#ffffff',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   button: {
     margin: '10px 0',
@@ -464,7 +473,7 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   resetButton: {
     margin: '10px',
@@ -480,44 +489,44 @@ const styles = {
   transactionList: {
     listStyleType: 'none',
     padding: 0,
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   transactionItem: {
     marginBottom: '10px',
     borderBottom: '1px solid #ffd700',
     paddingBottom: '10px',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   transactionDescription: {
     fontWeight: 'bold',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   transactionAmount: {
     fontWeight: 'bold',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   transactionDate: {
     fontSize: '0.9em',
     color: '#cccccc',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   transactionCategory: {
     fontSize: '0.9em',
     color: '#cccccc',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   loading: {
     textAlign: 'center',
     fontSize: '18px',
     color: '#ffd700',
     margin: '20px 0',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   error: {
     textAlign: 'center',
     color: '#f44336',
     margin: '20px 0',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   retryButton: {
     padding: '10px 20px',
@@ -528,12 +537,12 @@ const styles = {
     borderRadius: '4px',
     cursor: 'pointer',
     marginTop: '10px',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   noTransactions: {
     textAlign: 'center',
     color: '#cccccc',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s ease',
   },
   footer: {
     textAlign: 'center',
@@ -541,8 +550,8 @@ const styles = {
     padding: '10px',
     borderTop: '1px solid #ffd700',
     color: '#cccccc',
-    transition: 'all 0.3s ease'
-  }
+    transition: 'all 0.3s ease',
+  },
 };
 
 export default Dashboard;
