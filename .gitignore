@@ -8,3 +8,4 @@ new_env/
 .env
 node_modules/
 database_backups/
+Temp files/
