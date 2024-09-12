@@ -46,8 +46,9 @@ const AddBudget = () => {
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <div style={styles.formGroup}>
-        <label style={styles.label}>Категория</label>
+        <label htmlFor="category" style={styles.label}>Категория</label>
         <select
+          id="category"
           name="category"
           value={budget.category}
           onChange={handleChange}
@@ -60,10 +61,11 @@ const AddBudget = () => {
           ))}
         </select>
       </div>
-
+  
       <div style={styles.formGroup}>
-        <label style={styles.label}>Сумма</label>
+        <label htmlFor="amount" style={styles.label}>Сумма</label>
         <input
+          id="amount"
           type="number"
           name="amount"
           value={budget.amount}
@@ -73,10 +75,11 @@ const AddBudget = () => {
           style={styles.input}
         />
       </div>
-
+  
       <div style={styles.formGroup}>
-        <label style={styles.label}>Дата начала</label>
+        <label htmlFor="start_date" style={styles.label}>Дата начала</label>
         <input
+          id="start_date"
           type="date"
           name="start_date"
           value={budget.start_date}
@@ -85,10 +88,11 @@ const AddBudget = () => {
           style={styles.input}
         />
       </div>
-
+  
       <div style={styles.formGroup}>
-        <label style={styles.label}>Дата окончания</label>
+        <label htmlFor="end_date" style={styles.label}>Дата окончания</label>
         <input
+          id="end_date"
           type="date"
           name="end_date"
           value={budget.end_date}
@@ -97,10 +101,11 @@ const AddBudget = () => {
           style={styles.input}
         />
       </div>
-
+  
       <div style={styles.formGroup}>
-        <label style={styles.label}>Пользователь</label>
+        <label htmlFor="user" style={styles.label}>Пользователь</label>
         <select
+          id="user"
           name="user"
           value={budget.user}
           onChange={handleChange}
@@ -113,11 +118,11 @@ const AddBudget = () => {
           ))}
         </select>
       </div>
-
+  
       <button type="submit" style={styles.button}>Добавить бюджет</button>
     </form>
   );
-};
+}
 
 const styles = {
   form: {

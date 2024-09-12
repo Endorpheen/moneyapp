@@ -46,7 +46,7 @@ const Profile = () => {
             name="username"
             value={user.username}
             onChange={handleInputChange}
-            placeholder="Имя пользователя"
+            placeholder="Аккаунт пользователя"
             style={styles.input}
           />
           <input
@@ -77,7 +77,7 @@ const Profile = () => {
         </form>
       ) : (
         <div style={styles.profileInfo}>
-          <p><strong>Имя пользователя:</strong> {user.username}</p>
+          <p><strong>Аккаунт пользователя:</strong> {user.username}</p>
           <p><strong>Email:</strong> {user.email}</p>
           <p><strong>Имя:</strong> {user.first_name}</p>
           <p><strong>Фамилия:</strong> {user.last_name}</p>

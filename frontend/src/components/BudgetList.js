@@ -89,6 +89,7 @@ const BudgetList = () => {
             value={newBudget.start_date}
             onChange={handleInputChange}
             style={styles.input}
+            aria-label="Дата начала"  // Добавляем aria-label
           />
           <input
             type="date"
@@ -96,12 +97,14 @@ const BudgetList = () => {
             value={newBudget.end_date}
             onChange={handleInputChange}
             style={styles.input}
+            aria-label="Дата окончания"  // Добавляем aria-label
           />
           <select
             name="category"
             value={newBudget.category}
             onChange={handleInputChange}
             style={styles.input}
+            aria-label="Категория"  // Добавляем aria-label
           >
             <option value="">Выберите категорию</option>
             {categories.map((category) => (
