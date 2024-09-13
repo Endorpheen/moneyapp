@@ -61,7 +61,7 @@ const BudgetList = () => {
       <h2 style={styles.title}>Бюджеты</h2>
       <div style={styles.budgetList}>
         {budgets.map((budget) => (
-          <div key={budget.id} style={styles.budgetItem}>
+          <div key={budget.id} className="budget-item" style={styles.budgetItem}>
             <h3 style={styles.budgetTitle}>{budget.category.name}</h3>
             <p style={styles.budgetAmount}>{formatCurrency(budget.amount)}</p>
             <p style={styles.budgetDates}>
@@ -116,7 +116,7 @@ const BudgetList = () => {
       </div>
     </div>
   );
-};
+}  
 
 const styles = {
   container: {

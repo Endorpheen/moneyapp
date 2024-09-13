@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'moneyapp.urls'
@@ -224,3 +225,8 @@ LOGGING = {
         },
     },
 }
+
+# Content Security Policy (CSP) settings
+CSP_DEFAULT_SRC = ("'self'",)  # Разрешаем загрузку контента только с вашего сайта
+CSP_STYLE_SRC = ("'self'", 'https://stackpath.bootstrapcdn.com')  # Разрешаем загрузку стилей из вашего сайта и внешнего ресурса (например, Bootstrap)
+CSP_SCRIPT_SRC = ("'self'", 'https://cdnjs.cloudflare.com')  # Разрешаем загрузку скриптов из вашего сайта и внешнего CDN (например, jQuery)

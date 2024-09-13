@@ -9,3 +9,4 @@ new_env/
 node_modules/
 database_backups/
 Temp files/
+cypress/

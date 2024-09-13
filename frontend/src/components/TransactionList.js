@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import axiosInstance from '../api/axiosConfig';
 import { format } from 'date-fns';
-import { ru, enUS } from 'date-fns/locale';
 
 const TransactionList = () => {
-  const { t, i18n } = useTranslation();
   const [transactions, setTransactions] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const [filter, setFilter] = useState('');
@@ -24,18 +21,37 @@ const TransactionList = () => {
   }, []);
 
   const sortedTransactions = useMemo(() => {
+    if (!transactions) return [];
+
     let sortableTransactions = [...transactions];
+
+    // Проверяем, задана ли конфигурация сортировки
     if (sortConfig !== null) {
       sortableTransactions.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        // Если ключ - "amount", сортируем как числа
+        if (sortConfig.key === 'amount') {
+          return sortConfig.direction === 'asc' 
+            ? aValue - bValue 
+            : bValue - aValue;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
+
+        // Если ключ - "date", сортируем как даты
+        if (sortConfig.key === 'date') {
+          return sortConfig.direction === 'asc' 
+            ? new Date(aValue) - new Date(bValue) 
+            : new Date(bValue) - new Date(aValue);
         }
-        return 0;
+
+        // В противном случае сортируем как строки
+        return sortConfig.direction === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
       });
     }
+
     return sortableTransactions;
   }, [transactions, sortConfig]);
 
@@ -52,20 +68,28 @@ const TransactionList = () => {
   );
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat(i18n.language, { style: 'currency', currency: 'RUB' }).format(amount);
+    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(amount);
   };
 
   const formatDate = (dateString) => {
-    const locale = i18n.language === 'ru' ? ru : enUS;
-    return format(new Date(dateString), 'dd MMMM yyyy', { locale });
+    // Проверяем, что дата существует и является валидной
+    if (!dateString) {
+      return 'Некорректная дата';
+    }
+    try {
+      return format(new Date(dateString), 'dd MMMM yyyy');
+    } catch (error) {
+      console.error('Ошибка форматирования даты:', error);
+      return 'Некорректная дата';
+    }
   };
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>{t('transactions.title')}</h2>
+      <h2 style={styles.title}>Список транзакций</h2>
       <input
         type="text"
-        placeholder={t('transactions.filterPlaceholder')}
+        placeholder="Фильтр"
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         style={styles.filterInput}
@@ -73,14 +97,14 @@ const TransactionList = () => {
       <table style={styles.table}>
         <thead>
           <tr>
-            <th style={styles.th} onClick={() => requestSort('date')}>{t('transactions.date')}</th>
-            <th style={styles.th} onClick={() => requestSort('description')}>{t('transactions.description')}</th>
-            <th style={styles.th} onClick={() => requestSort('amount')}>{t('transactions.amount')}</th>
+            <th style={styles.th} onClick={() => requestSort('date')}>Дата</th>
+            <th style={styles.th} onClick={() => requestSort('description')}>Описание</th>
+            <th style={styles.th} onClick={() => requestSort('amount')}>Сумма</th>
           </tr>
         </thead>
         <tbody>
           {filteredTransactions.map((transaction) => (
-            <tr key={transaction.id} style={styles.tr}>
+            <tr key={transaction.id} className="transaction-item" style={styles.tr}> {/* Класс добавлен здесь */}
               <td style={styles.td}>{formatDate(transaction.date)}</td>
               <td style={styles.td}>{transaction.description}</td>
               <td style={{...styles.td, color: transaction.amount > 0 ? '#4caf50' : '#f44336'}}>
@@ -124,7 +148,7 @@ const styles = {
     backgroundColor: '#2C2C2C',
     color: '#FFD700',
     padding: '12px',
-    textAlign: 'left',
+    textAlign: 'center', // Выровняли заголовки по центру
     cursor: 'pointer',
   },
   tr: {
@@ -132,6 +156,7 @@ const styles = {
   },
   td: {
     padding: '12px',
+    textAlign: 'center', // Выровняли данные по центру
   },
 };
 
