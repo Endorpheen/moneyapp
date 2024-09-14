@@ -130,6 +130,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -195,6 +197,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3002",
 ]
 
+CSRF_COOKIE_HTTPONLY = True
+
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -227,6 +231,13 @@ LOGGING = {
 }
 
 # Content Security Policy (CSP) settings
-CSP_DEFAULT_SRC = ("'self'",)  # Разрешаем загрузку контента только с вашего сайта
-CSP_STYLE_SRC = ("'self'", 'https://stackpath.bootstrapcdn.com')  # Разрешаем загрузку стилей из вашего сайта и внешнего ресурса (например, Bootstrap)
-CSP_SCRIPT_SRC = ("'self'", 'https://cdnjs.cloudflare.com')  # Разрешаем загрузку скриптов из вашего сайта и внешнего CDN (например, jQuery)
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'",)  # Разрешаем загрузку только с нашего сервера
+CSP_STYLE_SRC = ("'self'",)   # Разрешаем загрузку стилей только с нашего сервера
+CSP_FRAME_ANCESTORS = ("'none'",)  # Запрещаем встраивание
+CSP_FORM_ACTION = ("'self'", 'http://localhost:8000')  # Разрешаем отправку форм на Django на порту 8000
+
+# Content Security Settings
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+
