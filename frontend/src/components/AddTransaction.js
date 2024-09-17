@@ -7,19 +7,30 @@ const AddTransaction = () => {
     amount: '',
     date: '',
     description: '',
-    category: ''
+    category: '' // Начальное состояние категории пустое
   });
 
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true); // Добавляем состояние для отслеживания загрузки категорий
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axiosInstance.get('budget/api/categories/');
         setCategories(response.data);
+        
+        // Устанавливаем первую категорию по умолчанию после загрузки
+        if (response.data.length > 0) {
+          setTransaction((prevState) => ({
+            ...prevState,
+            category: response.data[0].id  // Инициализируем первую категорию
+          }));
+        }
+        setLoading(false); // Отключаем состояние загрузки после получения данных
       } catch (error) {
         console.error('Error fetching categories:', error);
         toast.error('Ошибка при загрузке категорий');
+        setLoading(false); // Отключаем состояние загрузки в случае ошибки
       }
     };
 
@@ -27,36 +38,55 @@ const AddTransaction = () => {
   }, []);
 
   const handleChange = (e) => {
-    setTransaction({ ...transaction, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setTransaction((prevState) => ({
+      ...prevState,
+      [name]: name === 'category' ? (value ? parseInt(value, 10) : '') : value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Проверяем, что категория выбрана
+    if (!transaction.category) {
+      toast.error('Пожалуйста, выберите категорию');
+      return;
+    }
+  
     try {
-      const selectedCategory = categories.find(cat => cat.id === parseInt(transaction.category));
+      const selectedCategory = categories.find(cat => cat.id === transaction.category);
       const transactionType = selectedCategory ? selectedCategory.type : 'expense';
       const amount = transactionType === 'expense' ? -Math.abs(parseFloat(transaction.amount)) : Math.abs(parseFloat(transaction.amount));
-
+  
+      // Удаляем лишнее поле `category` и отправляем только `category_id`
       const transactionData = {
-        ...transaction,
         amount: amount,
-        category_id: parseInt(transaction.category)
+        date: transaction.date,
+        description: transaction.description,
+        category_id: transaction.category // Отправляем только category_id
       };
-
+  
       await axiosInstance.post('budget/api/transactions/', transactionData);
-      setTransaction({ amount: '', date: '', description: '', category: '' });
+      setTransaction({ amount: '', date: '', description: '', category: categories[0]?.id || '' });
       toast.success('Транзакция успешно добавлена');
     } catch (error) {
       console.error('Error adding transaction:', error);
       toast.error('Ошибка при добавлении транзакции');
     }
   };
+  
+
+  if (loading) {
+    return <div>Загрузка категорий...</div>; // Пока категории не загружены, отображаем сообщение
+  }
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
       <div style={styles.formGroup}>
-        <label style={styles.label}>Сумма</label>
+        <label htmlFor="amount" style={styles.label}>Сумма</label>
         <input
+          id="amount"
           type="number"
           name="amount"
           value={transaction.amount}
@@ -68,8 +98,9 @@ const AddTransaction = () => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Дата</label>
+        <label htmlFor="date" style={styles.label}>Дата</label>
         <input
+          id="date"
           type="date"
           name="date"
           value={transaction.date}
@@ -80,8 +111,9 @@ const AddTransaction = () => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Описание</label>
+        <label htmlFor="description" style={styles.label}>Описание</label>
         <input
+          id="description"
           type="text"
           name="description"
           value={transaction.description}
@@ -92,17 +124,19 @@ const AddTransaction = () => {
       </div>
 
       <div style={styles.formGroup}>
-        <label style={styles.label}>Категория</label>
+        <label htmlFor="category" style={styles.label}>Категория</label>
         <select
+          id="category"
           name="category"
           value={transaction.category}
           onChange={handleChange}
           required
           style={styles.input}
         >
-          <option value="">Выберите категорию</option>
           {categories.map(category => (
-            <option key={category.id} value={category.id}>{category.name}</option>
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
           ))}
         </select>
       </div>
@@ -145,7 +179,8 @@ const styles = {
     color: '#1c1c1c',
     border: 'none',
     borderRadius: '4px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    fontWeight: 'bold'
   }
 };
 

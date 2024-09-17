@@ -55,6 +55,7 @@ const Settings = () => {
         <label>
           <input
             type="checkbox"
+            name="notifications_enabled" // Добавлено имя
             checked={settings.notifications_enabled}
             onChange={() => handleToggle('notifications_enabled')}
           />
@@ -65,6 +66,7 @@ const Settings = () => {
         <label>
           <input
             type="checkbox"
+            name="dark_mode" // Добавлено имя для темной темы
             checked={settings.dark_mode}
             onChange={() => handleToggle('dark_mode')}
           />

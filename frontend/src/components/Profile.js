@@ -9,6 +9,7 @@ const Profile = () => {
     last_name: ''
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // Новое состояние для ошибки
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -31,14 +32,17 @@ const Profile = () => {
     try {
       await axiosInstance.put('/budget/api/user-profile/', user);
       setIsEditing(false);
+      setErrorMessage(''); // Сброс сообщения об ошибке
     } catch (error) {
       console.error('Error updating user data:', error);
+      setErrorMessage('Ошибка при обновлении профиля'); // Устанавливаем сообщение об ошибке
     }
   };
 
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Профиль пользователя</h2>
+      {errorMessage && <div style={styles.error}>{errorMessage}</div>} {/* Вывод ошибки */}
       {isEditing ? (
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
@@ -46,7 +50,7 @@ const Profile = () => {
             name="username"
             value={user.username}
             onChange={handleInputChange}
-            placeholder="Имя пользователя"
+            placeholder="Аккаунт пользователя"
             style={styles.input}
           />
           <input
@@ -77,7 +81,7 @@ const Profile = () => {
         </form>
       ) : (
         <div style={styles.profileInfo}>
-          <p><strong>Имя пользователя:</strong> {user.username}</p>
+          <p><strong>Аккаунт пользователя:</strong> {user.username}</p>
           <p><strong>Email:</strong> {user.email}</p>
           <p><strong>Имя:</strong> {user.first_name}</p>
           <p><strong>Фамилия:</strong> {user.last_name}</p>
@@ -126,6 +130,11 @@ const styles = {
     backgroundColor: '#2C2C2C',
     padding: '20px',
     borderRadius: '8px',
+  },
+  error: { // Стили для ошибки
+    color: '#ff4d4d',
+    marginBottom: '15px',
+    fontSize: '16px',
   },
 };
 

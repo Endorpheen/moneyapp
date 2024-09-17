@@ -6,6 +6,7 @@ import { startTokenRefreshInterval } from '../api/axiosConfig';
 const Login = ({ setIsLoggedIn }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState(''); // Новое состояние для сообщения об ошибке
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,6 +20,7 @@ const Login = ({ setIsLoggedIn }) => {
       startTokenRefreshInterval();
     } catch (error) {
       console.error('Login failed:', error);
+      setErrorMessage('Неверное имя пользователя или пароль'); // Устанавливаем сообщение об ошибке
     }
   };
 
@@ -26,11 +28,13 @@ const Login = ({ setIsLoggedIn }) => {
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
         <h2 style={styles.title}>Вход в систему</h2>
+        {errorMessage && <div style={styles.error}>{errorMessage}</div>} {/* Вывод сообщения об ошибке */}
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Имя пользователя"
+          name="username"
           style={styles.input}
         />
         <input
@@ -38,6 +42,7 @@ const Login = ({ setIsLoggedIn }) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Пароль"
+          name="password"
           style={styles.input}
         />
         <button type="submit" style={styles.button}>Войти</button>
@@ -89,6 +94,11 @@ const styles = {
     borderRadius: '4px',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
+  },
+  error: { // Стили для сообщения об ошибке
+    color: '#ff4d4d',
+    marginBottom: '15px',
+    fontSize: '16px',
   },
 };
 

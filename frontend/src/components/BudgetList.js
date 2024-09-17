@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../api/axiosConfig';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { toast } from 'react-toastify';
 
 const BudgetList = () => {
   const [budgets, setBudgets] = useState([]);
@@ -33,8 +34,21 @@ const BudgetList = () => {
       const response = await axiosInstance.post('/budget/api/budgets/', newBudget);
       setBudgets([...budgets, response.data]);
       setNewBudget({ amount: '', start_date: '', end_date: '', category: '' });
+      toast.success('Бюджет успешно добавлен!');
     } catch (error) {
       console.error('Error adding budget:', error);
+      toast.error('Ошибка при добавлении бюджета');
+    }
+  };
+
+  const deleteBudget = async (budgetId) => {
+    try {
+      await axiosInstance.delete(`/budget/api/budgets/${budgetId}/`);
+      setBudgets(budgets.filter((budget) => budget.id !== budgetId));
+      toast.success('Бюджет успешно удалён');
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+      toast.error('Ошибка при удалении бюджета');
     }
   };
 
@@ -47,13 +61,14 @@ const BudgetList = () => {
       <h2 style={styles.title}>Бюджеты</h2>
       <div style={styles.budgetList}>
         {budgets.map((budget) => (
-          <div key={budget.id} style={styles.budgetItem}>
+          <div key={budget.id} className="budget-item" style={styles.budgetItem}>
             <h3 style={styles.budgetTitle}>{budget.category.name}</h3>
             <p style={styles.budgetAmount}>{formatCurrency(budget.amount)}</p>
             <p style={styles.budgetDates}>
               {format(new Date(budget.start_date), 'dd MMMM yyyy', { locale: ru })} - 
               {format(new Date(budget.end_date), 'dd MMMM yyyy', { locale: ru })}
             </p>
+            <button style={styles.deleteButton} onClick={() => deleteBudget(budget.id)}>Удалить</button>
           </div>
         ))}
       </div>
@@ -74,6 +89,7 @@ const BudgetList = () => {
             value={newBudget.start_date}
             onChange={handleInputChange}
             style={styles.input}
+            aria-label="Дата начала"  // Добавляем aria-label
           />
           <input
             type="date"
@@ -81,12 +97,14 @@ const BudgetList = () => {
             value={newBudget.end_date}
             onChange={handleInputChange}
             style={styles.input}
+            aria-label="Дата окончания"  // Добавляем aria-label
           />
           <select
             name="category"
             value={newBudget.category}
             onChange={handleInputChange}
             style={styles.input}
+            aria-label="Категория"  // Добавляем aria-label
           >
             <option value="">Выберите категорию</option>
             {categories.map((category) => (
@@ -98,7 +116,7 @@ const BudgetList = () => {
       </div>
     </div>
   );
-};
+}  
 
 const styles = {
   container: {
@@ -137,6 +155,16 @@ const styles = {
   budgetDates: {
     fontSize: '14px',
     color: '#CCCCCC',
+  },
+  deleteButton: {
+    backgroundColor: '#f44336',
+    color: 'white',
+    padding: '10px',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    marginTop: '10px',
+    fontWeight: 'bold',
   },
   addBudgetForm: {
     backgroundColor: '#2C2C2C',
