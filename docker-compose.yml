@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Dockerfile для Django
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./:/app  # Монтируем всю директорию проекта
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+    depends_on:
+      - frontend  # Опционально, если хотите запустить фронтенд до бэкенда
+
+  frontend:
+    build:
+      context: ./frontend  # Путь к директории с React-приложением
+      dockerfile: Dockerfile  # Dockerfile для React
+    stdin_open: true
+    tty: true
+    ports:
+      - "3002:3002"  # Используйте порт 3002 для React
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Для отслеживания изменений на файловых системах
+
+volumes:
+  sqlite_data:
+    driver: local  # Локальный том для базы данных SQLite
