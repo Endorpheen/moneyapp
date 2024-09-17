@@ -94,15 +94,21 @@ MoneyApp is a full-stack web application for managing personal finances, built w
    - This command will create and start the necessary containers. The backend will be available at [http://localhost:8000](http://localhost:8000), and the frontend at [http://localhost:3002](http://localhost:3002).
 
 6. **Run Database Migrations:**
-   - Open a new PowerShell window and execute the following command to apply database migrations:
+   - First, you need to find the `container_id` for your backend container. To do this, run the following command to list all running containers:
      ```bash
-     docker compose exec backend python manage.py migrate
+     docker ps
+     ```
+   - Look for the container running the backend service and copy its `CONTAINER ID`.
+
+   - Once you have the `container_id`, run the migrations:
+     ```bash
+     docker exec -it <container_id> python manage.py migrate
      ```
 
 7. **Create a Superuser:**
-   - To create a superuser, enter the following command in the new PowerShell window:
+   - Similarly, create a superuser by running the following command (replacing `<container_id>` with your backend container's ID):
      ```bash
-     docker compose exec backend python manage.py createsuperuser
+     docker exec -it <container_id> python manage.py createsuperuser
      ```
    - Follow the prompts in the terminal to enter the superuser credentials.
 
@@ -129,6 +135,48 @@ MoneyApp is a full-stack web application for managing personal finances, built w
       ```bash
       docker compose up --build
       ```
+
+### Using Pre-built Docker Images
+
+If you don't want to clone the repository or set up the project manually, you can use the pre-built Docker images hosted on Docker Hub. These images contain everything needed to run the application.
+
+1. **Pull the backend image from Docker Hub:**
+   ```bash
+   docker pull end000/moneyapp-backend:latest
+   ```
+
+2. **Pull the frontend image from Docker Hub:**
+   ```bash
+   docker pull end000/moneyapp-frontend:latest
+   ```
+
+3. **Run the backend container:**
+   ```bash
+   docker run -d -p 8000:8000 end000/moneyapp-backend:latest
+   ```
+
+4. **Run the frontend container:**
+   ```bash
+   docker run -d -p 3002:3002 end000/moneyapp-frontend:latest
+   ```
+
+5. **Run Database Migrations (After Starting the Containers):**
+   - First, find the `container_id` of the backend container by running:
+     ```bash
+     docker ps
+     ```
+   - Then, run the migrations using the following command:
+     ```bash
+     docker exec -it <container_id> python manage.py migrate
+     ```
+
+6. **Create a Superuser:**
+   - Similarly, create a superuser by running the following command (replacing `<container_id>` with your backend container's ID):
+     ```bash
+     docker exec -it <container_id> python manage.py createsuperuser
+     ```
+
+Now your application should be fully functional with the backend available at [http://localhost:8000](http://localhost:8000) and the frontend at [http://localhost:3002](http://localhost:3002).
 
 ## API Documentation
 Detailed documentation for API endpoints is available in the [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) file.
